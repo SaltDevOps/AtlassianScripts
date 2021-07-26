@@ -1,0 +1,75 @@
+// import com.atlassian.jira.ComponentManager
+import com.atlassian.jira.issue.IssueManager
+import com.atlassian.jira.issue.MutableIssue
+import com.atlassian.jira.component.ComponentAccessor
+import com.atlassian.jira.issue.customfields.option.LazyLoadedOption
+
+//IssueManager im = ComponentAccessor.getIssueManager()
+//MutableIssue issue = im.getIssueObject("AOCCMINT-63")
+
+def customFieldManager = ComponentAccessor.getCustomFieldManager()
+def scsirField = customFieldManager.getCustomFieldObjects(issue).find{it.name == "SPO Cyber Security Importance Rank"};
+def scsceField = customFieldManager.getCustomFieldObjects(issue).find{it.name == "SPO Cyber Security Certification Expiration"};
+def seonField = customFieldManager.getCustomFieldObjects(issue).find{it.name == "SPO Eng Operational Need"};
+def seunField = customFieldManager.getCustomFieldObjects(issue).find{it.name == "SPO Eng Urgent Need"};
+def sleField = customFieldManager.getCustomFieldObjects(issue).find{it.name == "SPO Logistics EOL"};
+def rewgrankField = customFieldManager.getCustomFieldObjects(issue).find{it.name == "REWG Rank"};
+def opsvalField = customFieldManager.getCustomFieldObjects(issue).find{it.name == "OPS Value"};
+    
+def scsirFieldValue = issue.getCustomFieldValue(scsirField)
+def scsceFieldValue = issue.getCustomFieldValue(scsceField)
+def seonFieldValue = issue.getCustomFieldValue(seonField)
+def seunFieldValue = issue.getCustomFieldValue(seunField)
+def sleFieldValue = issue.getCustomFieldValue(sleField)
+def rewgrankFieldValue = issue.getCustomFieldValue(rewgrankField)
+def opsvalFieldValue = issue.getCustomFieldValue(opsvalField)
+
+// Added ternary notation to check for nulls and setting default to 0 or L
+def scsirValue = (scsirFieldValue != null) ? ((LazyLoadedOption)scsirFieldValue).getValue():0;
+def scsceValue = (scsceFieldValue != null) ? ((LazyLoadedOption)scsceFieldValue).getValue():"L";
+def seonValue = (seonFieldValue != null) ? ((LazyLoadedOption)seonFieldValue).getValue():0;
+def seunValue = (seunFieldValue != null) ? ((LazyLoadedOption)seunFieldValue).getValue():0;
+def sleValue = (sleFieldValue != null) ? ((LazyLoadedOption)sleFieldValue).getValue():"L";
+def rewgrankValue = (rewgrankFieldValue != null) ? ((LazyLoadedOption)rewgrankFieldValue).getValue():0;
+def opsvalValue = (opsvalFieldValue != null) ? ((LazyLoadedOption)opsvalFieldValue).getValue():0;
+
+int scsir = scsirValue as Integer
+int seun = seunValue as Integer
+int seon = seonValue as Integer
+int scsce = 0
+int sle = 0
+int rewgrank = rewgrankValue as Integer
+int opsval = opsvalValue as Integer
+
+if (scsceValue == "L"){
+   scsce = 0 
+}
+if (scsceValue == "M"){
+   scsce = 5 
+}
+if (scsceValue == "H"){
+   scsce = 10
+}
+
+if (sleValue == "L"){
+   sle = 0
+}
+if (sleValue == "M"){
+   sle = 5 
+}
+if (sleValue == "H"){
+   sle = 10
+}
+
+def t = (seun/10 * 40) + (scsce/10 * 12) + (scsir/10 * 20) + (sle/10 * 15) + (opsval/10 * 13) 
+def r = (seun/10 * 40) + (scsce/10 * 12) + (scsir/10 * 20) + (sle/10 * 15) + ((100-rewgrank)/100 * 13)
+
+def tString = t.toString()
+def rString = r.toString()
+
+if (!rewgrankValue) {
+    return tString
+}
+else {
+    return rString
+}
