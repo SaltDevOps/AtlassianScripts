@@ -1,0 +1,5 @@
+(issue.customfield_14949.value == "New Requirement" && issue.customfield_14950 != null)
+||
+(issue.customfield_14949.value == "Modified Requirement" && issue.customfield_14950 != null)
+||
+(issue.customfield_14949.value == "Deleted Requirement" && issue.customfield_14950 != null)
