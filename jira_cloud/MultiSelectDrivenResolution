@@ -1,0 +1,8 @@
+//use case: Customer has a parent/child field setup called "Root Causes". Resolution should be set depending on a pre-determined combinbation of the parent/child relationship.
+//note: you will use the custom field IDs as part of your solution. 
+
+When: Issue transitioned to CLOSED
+If: all match
+"Root Causes" in cascadeOption(15228, 15241) OR "Root Causes" in cascadeOption(15228, 15242) OR "Root Causes" in cascadeOption(15228, 15243)
+
+Then: Edit issue fields RESOLUTION and set to "Code Fix".
