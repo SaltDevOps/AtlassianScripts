@@ -1,0 +1,12 @@
+//use case: customer who has an "Application" field with a set of values, and a "Division" field with a set of values. For each 'Application' there is a cooresponding Division field.
+//example: if 'Applicatio'n field has been selected w/"Corporate Applications" then 'Corporate Applications:' field should not be empty upon transition. 
+
+(issue.customfield_14940.value == "Corporate Applications" && issue.customfield_14945 != null) 
+||
+(issue.customfield_14940.value == "Enterprise Architect" && issue.customfield_14942 != null)
+||
+(issue.customfield_14940.value == "Infrastructure" && issue.customfield_14943 != null)
+||
+(issue.customfield_14940.value == "Insurance" && issue.customfield_14944 != null)
+||
+(issue.customfield_14940.value == "Reinsurance" && issue.customfield_14946 != null)
