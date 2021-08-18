@@ -1,0 +1,9 @@
+//use case: customer wants to know how many times an issue has been in X status.
+//reason: it's another metric for them to report on.
+//example: workflow has a "Rejection" status. If the issue is rejected 6 times throughout it's lifespan - a custom field should update to 6 (each time incrementally).
+
+Automation rule
+
+When: Issue transitioned to REJECTED
+Then: Edit issue fields "Rejection_Counter"
+--> {{#increment}}{{issue.Rejection_Counter}}{{/}}
