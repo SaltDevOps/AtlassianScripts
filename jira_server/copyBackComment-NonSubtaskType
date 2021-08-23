@@ -1,0 +1,84 @@
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.bc.project.component.ProjectComponent;
+import com.atlassian.jira.issue.comments.CommentManager;
+
+
+// Set global fields
+String commentBody = "";
+
+// List of field names to include in parent comment. The field names in the list should be separated with character(s) identified in fieldListDelimiter.
+// This should include a list of the custom fields to be included. System field will be added automatically. If no fields are specified, all fields will be included.
+// The base code splits the list of fields using ",".
+String fieldListDelimiter = ",";
+// Uncomment the following line and comment out the one after it to return all fields
+// String stringFieldList = "";
+String stringFieldList = "Change risk,Sites,Approvers,ECR Folder URL,IMPPLAN,Phone Number,Department,Enclave,Date Discovered,Response Due Date,Date Fix Released,Compliance Date,End Date,Clairvoyant Account Type,Funding Status,Availability Start,Funding Type,Baseline start date,Estimated Cost,CCB Date,Manufacturer,Approval Authority,Certificate,Date Tested,Level of Test,Test Type,Test Results,Additional Test Cards,EOL/EOS Date,SPO Logistics EOL,License End Date,SysAppSubSystem,SysAppVersion,Outage Date/Time,Date License Sent,Fielding Team Install,Estimated Completion Date,Date Needed,Start Date,ATO/Cert Date,Documentation Update Required,Documents Affected,Need by Date";
+String[] fieldList = stringFieldList.split(fieldListDelimiter);
+
+log.debug("Field List size:\t" + fieldList.size().toString());
+
+// Process system fields
+// Issue key
+commentBody += "Issue Key:\t" + issue.key + "\r\n";
+// Summary
+commentBody += "Issue Summary:\t" + issue.summary + "\r\n";
+// Summary
+commentBody += "Issue Description:\r\n" + issue.description + "\r\n";
+// Status
+commentBody += "Issue Status:\t" + issue.status.getName() + "\r\n";
+// Resolution
+commentBody += "Issue Resolution:\t" + issue.resolution + "\r\n";
+// Priority
+commentBody += "Issue Priority:\t" + issue.priorityObject.getName() + "\r\n";
+// Reporter
+commentBody += "Issue Reporter:\t" + issue.reporter + "\r\n";
+// Reporter
+commentBody += "Issue Assignee:\t" + issue.assignee + "\r\n";
+// Component/s
+componentBody = "None";
+issue.componentObjects.each { ProjectComponent componentObject ->
+  if (componentBody == "None") {
+    componentBody = componentObject.getName() + "\t";
+  } else {
+    componentBody += ", " + componentObject.getName() ;
+  }
+} 
+commentBody += "Issue Components:\t" + componentBody + "\r\n";
+// Created Date
+commentBody += "Issue Created:\t" + issue.created + "\r\n\r\n";
+// Resolved Date
+commentBody += "Issue Resolved:\t" + issue.resolutionDate + "\r\n\r\n";
+
+commentBody += "Custom Fields:\r\n\r\n";
+// Get custom fields for current issue
+List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
+
+// If no fieldList specified, iterate through all custom fields otherwise iterate through fieldList
+if (stringFieldList == ""){
+  for (CustomField customField in customFields) {
+    commentBody += customField.getFieldName() + ":\t" + issue.getCustomFieldValue(customField) + "\r\n";
+  }
+} else {
+  for(String field in fieldList){
+    log.debug("Field name:\t" + field); 
+    CustomField customField = customFields.find{it.name == field};
+    commentBody += customField.getFieldName() + ":\t" + issue.getCustomFieldValue(customField) + "\r\n";
+  }
+}
+
+log.debug("\r\n" + commentBody);
+
+// Write comment to parent issue
+Issue parentIssue;
+CommentManager commentManager = ComponentAccessor.getCommentManager();
+if (issue.parentObject){
+  parentIssue = issue.getParentObject();
+  commentManager.create(parentIssue, currentUser, commentBody, true);
+} else {
+  List<Issue> linkedIssues = issue.getLinkedIssues();
+  for(Issue linkedIssue in linkedIssues){
+    parentIssue = linkedIssue;
+    commentManager.create(parentIssue, currentUser, commentBody, true);
+  }
+}
