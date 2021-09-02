@@ -1,0 +1,33 @@
+import com.onresolve.scriptrunner.runner.customisers.WithPlugin;
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.component.ComponentAccessor;
+@WithPlugin("com.okapya.jira.checklist")
+import com.okapya.jira.customfields.*;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+
+// Get "Definition of Done" Checklist field
+def defOfDoneField;
+List<CustomField> customFields = ComponentAccessor.getCustomFieldManager().getCustomFieldObjects(issue);
+for(CustomField customField in customFields){
+    if (customField.getName() == "Definition of Done" && customField.getCustomFieldType().getName() == "Checklist"){
+        defOfDoneField = customField;
+    }
+}
+
+// Get list of items in "Definition of Done" field from current issue
+def ArrayList<ChecklistItem> existingItems = (ArrayList<ChecklistItem>) issue.getCustomFieldValue(defOfDoneField);
+def result = 0;
+
+// Only calculate if more than 0 items
+if (existingItems.size() > 0){
+	def checkedItems = 0;
+    // Check each item to determine whether it is checked
+    for (ChecklistItem item in existingItems){
+        if (item.isChecked()) checkedItems += 1;
+    }
+    // Calculate percentage complete to second decimal place
+    result = ((checkedItems/existingItems.size())*10000).toInteger()/100;
+}
+
+return result.toString() + "%";
